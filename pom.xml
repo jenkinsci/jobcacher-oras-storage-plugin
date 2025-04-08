@@ -31,7 +31,7 @@
 
   <properties>
 
-    <oras.version>0.2.2-14.vcb_6c1801e2b_a_</oras.version>
+    <oras.version>0.2.3-22.va_798d71d278b_</oras.version>
 
     <changelist>999999-SNAPSHOT</changelist>
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
