@@ -68,7 +68,7 @@ public class RegistryClient {
     public boolean exists(String fullName, String path) {
         ContainerRef ref = buildRef(fullName, path);
         try {
-            boolean exists = registry.getTags(ref).contains("latest");
+            boolean exists = registry.getTags(ref).tags().contains("latest");
             if (exists) {
                 Manifest manifest = registry.getManifest(ref);
                 LOG.debug(
@@ -146,6 +146,7 @@ public class RegistryClient {
         return builder.defaults(
                         config.credentials.getUsername(),
                         config.credentials.getPassword().getPlainText())
+                .withRegistry(config.registryUrl)
                 .build();
     }
 
