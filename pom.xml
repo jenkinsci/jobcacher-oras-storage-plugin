@@ -30,7 +30,7 @@
   </scm>
 
   <properties>
-    <oras.version>0.2.5-30.vb_63038a_6cb_65</oras.version>
+    <oras.version>0.2.6-32.v73557cb_8f4e3</oras.version>
     <changelist>999999-SNAPSHOT</changelist>
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
     <jenkins.baseline>2.492</jenkins.baseline>
