@@ -121,7 +121,7 @@ public class RegistryClient {
     }
 
     private ContainerRef buildRef(String fullName, String path) {
-        return ContainerRef.parse("%s/%s/%s:latest".formatted(config.registryUrl(), fullName, path));
+        return ContainerRef.parse("%s/%s:latest".formatted(fullName, path)).forRegistry(registry);
     }
 
     /**
@@ -130,8 +130,8 @@ public class RegistryClient {
     public void testConnection() throws Exception {
         Path tmpFile = Files.createTempFile("tmp-", "jenkins-oras-plugin-test");
         Files.writeString(tmpFile, "jenkins-oras-plugin-test");
-        ContainerRef ref = ContainerRef.parse(
-                "%s/%s/jenkins-oras-plugin-test:latest".formatted(config.registryUrl(), config.namespace()));
+        ContainerRef ref = ContainerRef.parse("%s/jenkins-oras-plugin-test:latest".formatted(config.namespace()))
+                .forRegistry(config.registryUrl);
         Layer layer = registry.pushBlob(ref, tmpFile);
         registry.pushConfig(ref, Config.empty());
         Manifest manifest = registry.pushManifest(ref, Manifest.empty().withLayers(List.of(layer)));
@@ -139,9 +139,9 @@ public class RegistryClient {
     }
 
     private Registry buildRegistry() {
-        Registry.Builder builder = Registry.Builder.builder();
+        Registry.Builder builder = Registry.builder();
         if (config.credentials == null) {
-            return builder.insecure().build(); // TODO: Insecure option
+            return builder.insecure().withRegistry(config.registryUrl).build(); // TODO: Insecure option
         }
         return builder.defaults(
                         config.credentials.getUsername(),
