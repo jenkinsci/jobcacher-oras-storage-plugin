@@ -8,6 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Map;
+import land.oras.Annotations;
+import land.oras.ArtifactType;
 import land.oras.Config;
 import land.oras.ContainerRef;
 import land.oras.Layer;
@@ -22,6 +25,11 @@ import org.slf4j.LoggerFactory;
  * Registry client wrapping the {@link Registry} instance and its configuration.
  */
 public class RegistryClient {
+
+    public static final ArtifactType ARTIFACT_MEDIA_TYPE =
+            ArtifactType.from("application/vnd.jenkins.jobcacher.manifest.v1+json");
+    public static final String CONFIG_MEDIA_TYPE = "application/vnd.jenkins.jobcacher.config.v1+json";
+    public static final String CONTENT_MEDIA_TYPE = "application/vnd.jenkins.jobcacher.content.v1.%s";
 
     /**
      * Logger
@@ -116,8 +124,22 @@ public class RegistryClient {
      * @throws Exception If an error occurs
      */
     public void upload(String fullName, String path, Path source) throws Exception {
+        String extension = path.substring(path.lastIndexOf(".")).replace(".", "");
+        String compressionMediaType;
+        switch (extension) {
+            case "tar" -> compressionMediaType = "tar";
+            case "zip" -> compressionMediaType = "zip";
+            case "gz" -> compressionMediaType = "tar+gzip";
+            case "zst" -> compressionMediaType = "tar+zstd";
+            default -> compressionMediaType = "tar";
+        }
         ContainerRef ref = buildRef(fullName, path);
-        registry.pushArtifact(ref, LocalPath.of(source));
+        registry.pushArtifact(
+                ref,
+                ARTIFACT_MEDIA_TYPE,
+                Annotations.ofManifest(Map.of("io.jenkins.jobcacher.fullname", fullName)),
+                Config.empty().withMediaType(CONFIG_MEDIA_TYPE),
+                LocalPath.of(source, CONTENT_MEDIA_TYPE.formatted(compressionMediaType)));
     }
 
     private ContainerRef buildRef(String fullName, String path) {

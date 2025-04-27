@@ -11,6 +11,12 @@ This plugin is an extension of the [jobcacher-plugin](https://plugins.jenkins.io
 <a href="https://oras.land/"><img src="https://oras.land/img/oras.svg" alt="banner" width="200px"></a>
 </p>
 
+The OCI artifacts produced by jobcacher artifact have the following custom media types:
+
+- artifact media type application/vnd.jenkins.jobcacher.manifest.v1+json
+- config media type application/vnd.jenkins.jobcacher.config.v1+json
+- content media type application/vnd.jenkins.jobcacher.content.v1.[compression]
+
 Currently, caches are stored "as-is", under a configurable `namespace` registry. This would require some update on `jobcacher` to support bundling OCI artifact with multiple layer or use referrer.
 
 On ZOT
