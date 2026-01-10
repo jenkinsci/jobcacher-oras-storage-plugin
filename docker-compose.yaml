@@ -1,6 +1,6 @@
 services:
   zot:
-    image: ghcr.io/project-zot/zot-linux-amd64:v2.1.2
+    image: ghcr.io/project-zot/zot-linux-amd64:v2.1.13
     container_name: zot
     restart: always
     ports:
