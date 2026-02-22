@@ -29,7 +29,6 @@ public class RegistryClient {
 
     public static final ArtifactType ARTIFACT_MEDIA_TYPE =
             ArtifactType.from("application/vnd.jenkins.jobcacher.manifest.v1+json");
-    public static final String CONFIG_MEDIA_TYPE = "application/vnd.jenkins.jobcacher.config.v1+json";
     public static final String CONTENT_MEDIA_TYPE = "application/vnd.jenkins.jobcacher.content.v1.%s";
 
     /**
@@ -148,7 +147,7 @@ public class RegistryClient {
                 ref,
                 ARTIFACT_MEDIA_TYPE,
                 Annotations.ofManifest(Map.of("io.jenkins.jobcacher.fullname", fullName)),
-                Config.empty().withMediaType(CONFIG_MEDIA_TYPE),
+                Config.empty(),
                 LocalPath.of(source, CONTENT_MEDIA_TYPE.formatted(compressionMediaType)));
     }
 
