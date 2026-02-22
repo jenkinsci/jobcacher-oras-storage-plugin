@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import land.oras.Annotations;
 import land.oras.ArtifactType;
 import land.oras.Config;
@@ -110,8 +111,17 @@ public class RegistryClient {
     public void download(String fullName, String path, Path target) throws Exception {
         ContainerRef ref = buildRef(fullName, path);
         Manifest manifest = registry.getManifest(ref);
-        try (InputStream is =
-                registry.fetchBlob(ref.withDigest(manifest.getLayers().get(0).getDigest()))) {
+        if (manifest.getLayers().isEmpty()) {
+            throw new OrasException("Artifact manifest doesn't contain any layer");
+        }
+        Layer layer = manifest.getLayers().size() == 1
+                ? manifest.getLayers().get(0)
+                : manifest.getLayers().stream()
+                        .filter(l -> l.getMediaType().startsWith("application/vnd.jenkins.jobcacher.content"))
+                        .findFirst()
+                        .orElseThrow(() -> new OrasException("Artifact manifest doesn't contain any content layer"));
+        Objects.requireNonNull(layer.getDigest(), "Layer digest cannot be null");
+        try (InputStream is = registry.fetchBlob(ref.withDigest(layer.getDigest()))) {
             Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
         }
     }
