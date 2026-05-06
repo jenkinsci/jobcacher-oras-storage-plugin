@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
@@ -146,23 +145,30 @@ public class RegistryClient {
         }
         ContainerRef ref = buildRef(fullName, path);
 
-        // Get image from resource
+        // Get image from resource - copy to a temp file to support resources loaded from JAR files.
+        // Using Paths.get(url.toURI()) would fail with FileSystemNotFoundException when the plugin
+        // is deployed as a JAR (as in production), because JAR URIs are not supported by Paths.get().
         URL url = this.getClass().getResource("/images/jobcacher-oras.png");
         Objects.requireNonNull(url, "Image resource not found");
-        Path imagePath = Paths.get(url.toURI());
-        Path imageName = imagePath.getFileName();
-        Objects.requireNonNull(imageName, "Image name cannot be null");
+        Path imagePath = Files.createTempFile("jobcacher-oras-icon", ".png");
+        try {
+            try (InputStream imageStream = url.openStream()) {
+                Files.copy(imageStream, imagePath, StandardCopyOption.REPLACE_EXISTING);
+            }
 
-        Annotations annotations = Annotations.ofManifest(Map.of("io.jenkins.jobcacher.fullname", fullName))
-                .withFileAnnotations(imageName.toString(), Map.of("io.goharbor.artifact.v1alpha1.icon", ""));
+            Annotations annotations = Annotations.ofManifest(Map.of("io.jenkins.jobcacher.fullname", fullName))
+                    .withFileAnnotations("jobcacher-oras.png", Map.of("io.goharbor.artifact.v1alpha1.icon", ""));
 
-        registry.pushArtifact(
-                ref,
-                ARTIFACT_MEDIA_TYPE,
-                annotations,
-                Config.empty(),
-                LocalPath.of(source, CONTENT_MEDIA_TYPE.formatted(compressionMediaType)),
-                LocalPath.of(imagePath, "image/png"));
+            registry.pushArtifact(
+                    ref,
+                    ARTIFACT_MEDIA_TYPE,
+                    annotations,
+                    Config.empty(),
+                    LocalPath.of(source, CONTENT_MEDIA_TYPE.formatted(compressionMediaType)),
+                    LocalPath.of(imagePath, "image/png"));
+        } finally {
+            Files.deleteIfExists(imagePath);
+        }
     }
 
     private ContainerRef buildRef(String fullName, String path) {
