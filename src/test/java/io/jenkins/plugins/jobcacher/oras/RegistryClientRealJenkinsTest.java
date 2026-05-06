@@ -47,15 +47,18 @@ class RegistryClientRealJenkinsTest {
         // Verify the resource can be opened as a stream and written to a temp file.
         // This is the fixed approach; the old code used Paths.get(url.toURI()) which fails
         // with FileSystemNotFoundException when the resource is loaded from a JAR file.
-        Path tempPath = Files.createTempFile("jobcacher-oras-icon", ".png");
+        Path tempPath = null;
         try {
+            tempPath = Files.createTempFile("jobcacher-oras-icon", ".png");
             try (InputStream is = url.openStream()) {
                 Files.copy(is, tempPath, StandardCopyOption.REPLACE_EXISTING);
             }
             assertThat(
                     "Icon image resource must have non-zero size", Files.size(tempPath), greaterThan(0L));
         } finally {
-            Files.deleteIfExists(tempPath);
+            if (tempPath != null) {
+                Files.deleteIfExists(tempPath);
+            }
         }
     }
 }

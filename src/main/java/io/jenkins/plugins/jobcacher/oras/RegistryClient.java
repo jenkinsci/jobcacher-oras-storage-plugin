@@ -150,8 +150,9 @@ public class RegistryClient {
         // is deployed as a JAR (as in production), because JAR URIs are not supported by Paths.get().
         URL url = this.getClass().getResource("/images/jobcacher-oras.png");
         Objects.requireNonNull(url, "Image resource not found");
-        Path imagePath = Files.createTempFile("jobcacher-oras-icon", ".png");
+        Path imagePath = null;
         try {
+            imagePath = Files.createTempFile("jobcacher-oras-icon", ".png");
             try (InputStream imageStream = url.openStream()) {
                 Files.copy(imageStream, imagePath, StandardCopyOption.REPLACE_EXISTING);
             }
@@ -167,7 +168,9 @@ public class RegistryClient {
                     LocalPath.of(source, CONTENT_MEDIA_TYPE.formatted(compressionMediaType)),
                     LocalPath.of(imagePath, "image/png"));
         } finally {
-            Files.deleteIfExists(imagePath);
+            if (imagePath != null) {
+                Files.deleteIfExists(imagePath);
+            }
         }
     }
 
