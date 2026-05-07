@@ -92,6 +92,9 @@ public class RegistryItemStorage extends ItemStorage<RegistryItemPath> implement
     }
 
     public static StandardUsernamePasswordCredentials getCredentials(String credentialsId) {
+        if (credentialsId == null) {
+            return null;
+        }
         return CredentialsMatchers.firstOrNull(
                 CredentialsProvider.lookupCredentialsInItemGroup(
                         StandardUsernamePasswordCredentials.class, Jenkins.get(), ACL.SYSTEM2, Collections.emptyList()),
