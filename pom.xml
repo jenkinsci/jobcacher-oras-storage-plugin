@@ -39,6 +39,10 @@
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
     <ban-commons-lang-2.skip>false</ban-commons-lang-2.skip>
     <ban-deprecated-stapler.skip>false</ban-deprecated-stapler.skip>
+
+    <!-- Version -->
+    <testcontainer.version>2.0.5</testcontainer.version>
+
   </properties>
 
   <dependencyManagement>
@@ -77,8 +81,20 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>land.oras</groupId>
+      <artifactId>oras-java-sdk</artifactId>
+      <version>0.6.0</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>pipeline-utility-steps</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>ssh-slaves</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -102,9 +118,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.wiremock</groupId>
-      <artifactId>wiremock-standalone</artifactId>
-      <version>3.13.2</version>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <version>${testcontainer.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
