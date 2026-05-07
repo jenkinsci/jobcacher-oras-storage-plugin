@@ -6,6 +6,11 @@ import hudson.model.Job;
 import hudson.remoting.VirtualChannel;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.plugins.itemstorage.ObjectPath;
 import org.kohsuke.stapler.HttpResponse;
@@ -54,7 +59,21 @@ public class RegistryItemPath extends ObjectPath {
 
     @Override
     public void copyFrom(FilePath source) throws IOException, InterruptedException {
-        source.act(new UploadToOciStorage(registry.getConfig(), fullName, path));
+
+        // Get image from resource
+        byte[] logo = null;
+        try {
+            URL url = this.getClass().getResource("/images/jobcacher-oras.png");
+            Objects.requireNonNull(url, "Image resource not found");
+            Path imagePath = Paths.get(url.toURI());
+            Path imageName = imagePath.getFileName();
+            Objects.requireNonNull(imageName, "Image name cannot be null");
+            logo = java.nio.file.Files.readAllBytes(imagePath);
+        } catch (URISyntaxException e) {
+            LOG.warn("Unable to load image resource, upload will proceed without it. Details: " + e.getMessage());
+        }
+
+        source.act(new UploadToOciStorage(registry.getConfig(), fullName, path, logo));
     }
 
     @Override
@@ -80,17 +99,19 @@ public class RegistryItemPath extends ObjectPath {
         private final RegistryClient.RegistryConfig config;
         private final String path;
         private final String fullName;
+        private final byte[] logo;
 
-        public UploadToOciStorage(RegistryClient.RegistryConfig config, String fullName, String path) {
+        public UploadToOciStorage(RegistryClient.RegistryConfig config, String fullName, String path, byte[] logo) {
             this.config = config;
             this.fullName = fullName;
             this.path = path;
+            this.logo = logo;
         }
 
         @Override
-        public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+        public Void invoke(File f, VirtualChannel channel) throws IOException {
             try {
-                new RegistryClient(this.config).upload(fullName, path, f.toPath());
+                new RegistryClient(this.config).upload(fullName, path, f.toPath(), logo);
             } catch (Exception e) {
                 throw new AbortException("Unable to upload cache to Registry. Details: " + e.getMessage());
             }
