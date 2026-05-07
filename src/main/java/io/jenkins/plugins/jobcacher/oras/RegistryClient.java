@@ -4,10 +4,8 @@ import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
@@ -134,7 +132,7 @@ public class RegistryClient {
      * @param source The path of the artifact to upload
      * @throws Exception If an error occurs
      */
-    public void upload(String fullName, String path, Path source) throws Exception {
+    public void upload(String fullName, String path, Path source, byte[] logo) throws Exception {
         String extension = path.substring(path.lastIndexOf(".")).replace(".", "");
         String compressionMediaType;
         switch (extension) {
@@ -146,15 +144,11 @@ public class RegistryClient {
         }
         ContainerRef ref = buildRef(fullName, path);
 
-        // Get image from resource
-        URL url = this.getClass().getResource("/images/jobcacher-oras.png");
-        Objects.requireNonNull(url, "Image resource not found");
-        Path imagePath = Paths.get(url.toURI());
-        Path imageName = imagePath.getFileName();
-        Objects.requireNonNull(imageName, "Image name cannot be null");
+        // Create temporary file with logo content
+        Path logoFile = Files.write(Files.createTempFile("logo-", ".png"), logo);
 
         Annotations annotations = Annotations.ofManifest(Map.of("io.jenkins.jobcacher.fullname", fullName))
-                .withFileAnnotations(imageName.toString(), Map.of("io.goharbor.artifact.v1alpha1.icon", ""));
+                .withFileAnnotations(logoFile.toString(), Map.of("io.goharbor.artifact.v1alpha1.icon", ""));
 
         registry.pushArtifact(
                 ref,
@@ -162,7 +156,7 @@ public class RegistryClient {
                 annotations,
                 Config.empty(),
                 LocalPath.of(source, CONTENT_MEDIA_TYPE.formatted(compressionMediaType)),
-                LocalPath.of(imagePath, "image/png"));
+                LocalPath.of(logoFile, "image/png"));
     }
 
     private ContainerRef buildRef(String fullName, String path) {
