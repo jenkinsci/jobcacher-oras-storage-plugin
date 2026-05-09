@@ -19,6 +19,7 @@ import land.oras.LocalPath;
 import land.oras.Manifest;
 import land.oras.Registry;
 import land.oras.exception.OrasException;
+import land.oras.utils.Const;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,10 +146,13 @@ public class RegistryClient {
         ContainerRef ref = buildRef(fullName, path);
 
         // Create temporary file with logo content
-        Path logoFile = Files.write(Files.createTempFile("logo-", ".png"), logo);
+        Path directory = Files.createTempDirectory("oras");
+        Path logoFile = Files.write(directory.resolve(Logo.LOGO_NAME), logo);
 
         Annotations annotations = Annotations.ofManifest(Map.of("io.jenkins.jobcacher.fullname", fullName))
-                .withFileAnnotations(logoFile.toString(), Map.of("io.goharbor.artifact.v1alpha1.icon", ""));
+                .withFileAnnotations(
+                        Logo.LOGO_NAME,
+                        Map.of("io.goharbor.artifact.v1alpha1.icon", "", Const.ANNOTATION_TITLE, Logo.LOGO_NAME));
 
         registry.pushArtifact(
                 ref,
