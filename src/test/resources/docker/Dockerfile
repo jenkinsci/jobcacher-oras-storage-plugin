@@ -1,4 +1,4 @@
-FROM jenkins/ssh-agent:7.16.0-jdk21
+FROM jenkins/ssh-agent:8.5.0-jdk21
 
 # Test only. Safe to connect with user/password
 RUN echo "password\npassword" | passwd root
