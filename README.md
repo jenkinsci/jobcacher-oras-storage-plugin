@@ -3,7 +3,7 @@
 This plugin is an extension of the [jobcacher-plugin](https://plugins.jenkins.io/jobcacher/) that allows you to store the caches in OCI compliant registries like using ORAS
 
 > [!WARNING]
-> The ORAS Java SDK is currently in **alpha** state and might impact the stability of this plugin.
+> The ORAS Java SDK is currently in **beta** state and might impact the stability of this plugin.
 >
 > It's configuration and APIs might change in future releases
 
